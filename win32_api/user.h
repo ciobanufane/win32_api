@@ -12,8 +12,14 @@ class NameSid {
 	LPTSTR name{ NULL };
 	LPTSTR stringSid{ NULL };
 public:
-	NameSid(LPTSTR username, LPTSTR stringSid);
+	NameSid(LPCTSTR username, LPCTSTR stringSid);
 	BOOL getName(LPTSTR buf, DWORD size);
 	BOOL getStringSid(LPTSTR buf, DWORD size);
 	void cleanUp();
+};
+
+class UserScore : public NameSid {
+	LPTSTR newName{ NULL };
+	INT8 actionId;
+public:
 };

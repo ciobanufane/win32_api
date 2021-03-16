@@ -9,11 +9,11 @@
 #include <strsafe.h>
 #include "user.h"
 
-NameSid::NameSid(LPTSTR name, LPTSTR stringSid) {
-	this->name = (LPTSTR)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*name) * _tcslen(name) + 100);
-	StringCchCopy(this->name, sizeof(*name)*(_tcslen(name)+1), name);
-	this->stringSid = (LPTSTR)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*stringSid) * _tcslen(stringSid) + 100);
-	StringCchCopy(this->stringSid, sizeof(*stringSid)*(_tcslen(stringSid)+1), stringSid);
+NameSid::NameSid(LPCTSTR name, LPCTSTR stringSid) {
+	this->name = (LPTSTR)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*name) * (_tcslen(name)+1));
+	this->stringSid = (LPTSTR)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*stringSid) * (_tcslen(stringSid) + 1));
+	StringCchCopy(this->name, _tcslen(name) + 1, name);
+	StringCchCopy(this->stringSid, _tcslen(stringSid)+1, stringSid);
 }
 
 BOOL NameSid::getName(LPTSTR buf, DWORD size) {
@@ -38,22 +38,12 @@ void NameSid::cleanUp() {
 	naming		: https://docs.microsoft.com/en-us/windows/win32/stg/coding-style-conventions
 */
 
-/*
-	void getCompName() {
-	TCHAR buffer[256] = L"";
-	DWORD dwSize = sizeof(buffer);
-	wprintf(L"Length: %d\n", dwSize);
-	GetComputerNameEx((COMPUTER_NAME_FORMAT)0, buffer, &dwSize);
-	wprintf(L"System Name: %s\n", buffer);
-}*/
-
-BOOL GetAccountSidFromName(LPCTSTR accountName, PSID sid, const DWORD sidSize) {
+BOOL GetAccountSidFromName(LPCTSTR accountName, PSID sid, const DWORD sidSize, LPTSTR refDomainName) {
 	// https://stackoverflow.com/questions/48103823/lookupaccountname-error-when-referenceddomainname-is-null
 
 	// variables used for the LookupAccountName function
 	SID_NAME_USE snu;
 	DWORD cbSid = sidSize, cchRefDomainName = 0;
-	LPTSTR refDomainName = NULL;
 	BOOL success;
 
 	success = LookupAccountName(NULL, accountName, sid, &cbSid, refDomainName, &cchRefDomainName, &snu);
@@ -65,12 +55,14 @@ BOOL GetAccountSidFromName(LPCTSTR accountName, PSID sid, const DWORD sidSize) {
 			return FALSE;
 		}
 
+		if (!refDomainName) {
+			HeapFree(GetProcessHeap(), 0, refDomainName);
+		}
+
 		// Allocate memory for the domain name
-		refDomainName = (LPTSTR)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, cchRefDomainName * sizeof(*refDomainName) + 2);
+		refDomainName = (LPTSTR)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, cchRefDomainName * sizeof(*refDomainName));
 		// Call LookupAccountName again but with space allocated for the domain name
 		success = LookupAccountName(NULL, accountName, sid, &cbSid, refDomainName, &cchRefDomainName, &snu);
-		// Free the memory allocated to domain name since we're not using it
-		HeapFree(GetProcessHeap(), 0, refDomainName);
 	}
 	return success;
 }
@@ -83,6 +75,7 @@ BOOL GetUsers(std::vector<NameSid>& users) {
 	// variables used for querying a user's SID
 	BYTE sidbuf[SECURITY_MAX_SID_SIZE];
 	LPTSTR stringSid;
+	LPTSTR refDomainName = NULL;
 
 	do {
 
@@ -93,7 +86,7 @@ BOOL GetUsers(std::vector<NameSid>& users) {
 			for (; dwEntryCnt > 0; --dwEntryCnt) {
 
 				// Get SID of a user and stores it in a SID struct
-				if (!GetAccountSidFromName(pTmpBuf->usri1_name, (PSID)sidbuf, sizeof(sidbuf))) {
+				if (!GetAccountSidFromName(pTmpBuf->usri1_name, (PSID)sidbuf, sizeof(sidbuf), refDomainName)) {
 					return FALSE;
 				}
 
@@ -102,7 +95,6 @@ BOOL GetUsers(std::vector<NameSid>& users) {
 					return FALSE;
 				}
 
-				// In Testing
 				users.push_back(NameSid(pTmpBuf->usri1_name, stringSid));
 
 				// i is the next index of the user; used for the netquerydisplayinformation function call
@@ -119,6 +111,9 @@ BOOL GetUsers(std::vector<NameSid>& users) {
 			printf("Error: %u\n", res);
 		}
 	} while (res == ERROR_MORE_DATA);
+
+	HeapFree(GetProcessHeap(), 0, refDomainName);
+
 	return TRUE;
 }
 
