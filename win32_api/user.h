@@ -13,7 +13,7 @@ class NameSid {
 	LPTSTR stringSid{ NULL };
 public:
 	NameSid(LPTSTR username, LPTSTR stringSid);
-	BOOL getName(TCHAR buf[], DWORD size);
-	BOOL getStringSid(LPTSTR& buf, DWORD size);
+	BOOL getName(LPTSTR buf, DWORD size);
+	BOOL getStringSid(LPTSTR buf, DWORD size);
 	void cleanUp();
 };

@@ -6,26 +6,23 @@
 #include <lm.h>
 #include <sddl.h>
 #include <tchar.h>
-#include "users.h"
+#include <strsafe.h>
+#include "user.h"
 
 NameSid::NameSid(LPTSTR name, LPTSTR stringSid) {
-	wprintf(L"%d\n", sizeof(*name) * (_tcslen(name) + 1));
-	this->name = (LPTSTR)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*name) * _tcslen(name) + 2);
-	_tcscpy_s(this->name, sizeof(*name) * _tcslen(name) + 2, name);
-	if (stringSid != NULL) {
-		wprintf(L"%d\n", sizeof(*stringSid) * (_tcslen(stringSid) + 1));
-		this->stringSid = (LPTSTR)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*stringSid) * _tcslen(stringSid) + 2);
-		_tcscpy_s(this->stringSid, sizeof(*stringSid) * _tcslen(stringSid) + 2, stringSid);
-	}
+	this->name = (LPTSTR)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*name) * _tcslen(name) + 100);
+	StringCchCopy(this->name, sizeof(*name)*(_tcslen(name)+1), name);
+	this->stringSid = (LPTSTR)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*stringSid) * _tcslen(stringSid) + 100);
+	StringCchCopy(this->stringSid, sizeof(*stringSid)*(_tcslen(stringSid)+1), stringSid);
 }
 
-BOOL NameSid::getName(TCHAR buf[], DWORD size) {
-	_tcscpy_s(buf, size, this->name);
+BOOL NameSid::getName(LPTSTR buf, DWORD size) {
+	StringCchCopy(buf, size, this->name);
 	return TRUE;
 }
 
-BOOL NameSid::getStringSid(LPTSTR& buf, DWORD size) {
-	_tcscpy_s(buf, size, this->stringSid);
+BOOL NameSid::getStringSid(LPTSTR buf, DWORD size) {
+	StringCchCopy(buf, size, this->stringSid);
 	return TRUE;
 }
 
@@ -55,7 +52,7 @@ BOOL GetAccountSidFromName(LPCTSTR accountName, PSID sid, const DWORD sidSize) {
 
 	// variables used for the LookupAccountName function
 	SID_NAME_USE snu;
-	DWORD cbSid = 0, cchRefDomainName = 0;
+	DWORD cbSid = sidSize, cchRefDomainName = 0;
 	LPTSTR refDomainName = NULL;
 	BOOL success;
 
@@ -96,25 +93,24 @@ BOOL GetUsers(std::vector<NameSid>& users) {
 			for (; dwEntryCnt > 0; --dwEntryCnt) {
 
 				// Get SID of a user and stores it in a SID struct
-				/*if (!GetAccountSidFromName(pTmpBuf->usri1_name, (PSID)sidbuf, sizeof(sidbuf))) {
+				if (!GetAccountSidFromName(pTmpBuf->usri1_name, (PSID)sidbuf, sizeof(sidbuf))) {
 					return FALSE;
 				}
 
 				// Converts the SID struct to a string SID
 				if (!ConvertSidToStringSid((PSID)sidbuf, &stringSid)) {
 					return FALSE;
-				}*/
+				}
 
 				// In Testing
-				users.push_back(NameSid(pTmpBuf->usri1_name, NULL));
+				users.push_back(NameSid(pTmpBuf->usri1_name, stringSid));
 
 				// i is the next index of the user; used for the netquerydisplayinformation function call
 				i = pTmpBuf->usri1_next_index;
 				// moves onto the next address of the next net_display_user
 				pTmpBuf++;
 				// have to free up memory as per documentation for ConvertSidToStringSid
-				//LocalFree(stringSid);
-				//ZeroMemory(sidbuf, sizeof(sidbuf));
+				LocalFree(stringSid);
 			}
 			// have to free up memory as per documentation for NetQueryDisplayInformation
 			NetApiBufferFree(pBuf);
@@ -126,16 +122,17 @@ BOOL GetUsers(std::vector<NameSid>& users) {
 	return TRUE;
 }
 
-int wmain() {
+int main() {
 	std::vector<NameSid> test;
-	//GetUsers(test);
+	TCHAR buf1[256] = L"";
+	TCHAR buf2[256] = L"";
+	GetUsers(test);
 
 	for (std::vector<NameSid>::iterator it = test.begin(); it != test.end(); ++it) {
 
-		TCHAR buf1[256] = L"";
-		TCHAR buf2[256] = L"";
 		it->getName(buf1, 256);
-		wprintf(L"%s\n", buf1);
+		it->getStringSid(buf2, 256);
+		wprintf(L"%s + %s\n", buf1, buf2);
 		it->cleanUp();
 
 		ZeroMemory(buf1, sizeof(buf1));

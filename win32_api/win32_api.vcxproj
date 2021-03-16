@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="test.cpp" />
     <ClCompile Include="win32_api.cpp" />
   </ItemGroup>
   <ItemGroup>
