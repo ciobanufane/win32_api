@@ -44,11 +44,6 @@ void CHECK_SCORES()
 	for (std::vector<User>::iterator it = users.begin(); it != users.end(); ++it) {
 		wprintf(L"%s\n", it->getName());
 	}
-	std::cout << binary_search(users, L"zzz") << '\n';
-	std::cout << binary_search(users, L"bleh") << '\n';
-	std::cout << binary_search(users, L"leon") << '\n';
-	std::cout << binary_search(users, L"administrator") << '\n';
-	std::cout << binary_search(users, L"WDAGUtilityAccount") << '\n';
 	/*
 	for (std::vector<UserScore>::iterator it = scores.begin(); it != scores.end(); ++it) {
 		switch (it->getActionId()) {
