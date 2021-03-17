@@ -1,13 +1,12 @@
 #pragma comment(lib, "netapi32.lib")
 
 #include <iostream>
-#include <vector>
 #include <windows.h>
 #include <lm.h>
 #include <sddl.h>
 #include <tchar.h>
 #include <strsafe.h>
-#include "user.h"
+#include "win32_api.h"
 
 /*
 	References
@@ -43,7 +42,7 @@ BOOL GetAccountSidFromName(LPCTSTR accountName, PSID sid, const DWORD sidSize) {
 	return success;
 }
 
-BOOL GetUsers(std::vector<NameSid>& users) {
+BOOL GetUsers(std::vector<User>& users) {
 	// variables used for querying users
 	PNET_DISPLAY_USER pBuf, pTmpBuf;
 	DWORD res, dwEntryCnt, i = 0;
@@ -70,7 +69,7 @@ BOOL GetUsers(std::vector<NameSid>& users) {
 					return FALSE;
 				}
 
-				users.push_back(NameSid(pTmpBuf->usri1_name, stringSid));
+				users.push_back(User(pTmpBuf->usri1_name, stringSid, pTmpBuf->usri1_flags));
 
 				// i is the next index of the user; used for the netquerydisplayinformation function call
 				i = pTmpBuf->usri1_next_index;
@@ -89,22 +88,13 @@ BOOL GetUsers(std::vector<NameSid>& users) {
 	return TRUE;
 }
 
-int main() {
-	std::vector<NameSid> test;
-	TCHAR buf1[256] = L"";
-	TCHAR buf2[256] = L"";
-	DWORD length{ 256 };
+int bmain() {
+	std::vector<User> test;
 	GetUsers(test);
 
-	for (std::vector<NameSid>::iterator it = test.begin(); it != test.end(); ++it) {
-
-		it->getName(buf1, length);
-		it->getStringSid(buf2, length);
-		wprintf(L"%s + %s\n", buf1, buf2);
+	for (std::vector<User>::iterator it = test.begin(); it != test.end(); ++it) {
+		wprintf(L"%s + %s\n", it->getName(), it->getStringSid());
 		it->cleanUp();
-
-		ZeroMemory(buf1, sizeof(buf1));
-		ZeroMemory(buf2, sizeof(buf2));
 	}
 
 	return 0;

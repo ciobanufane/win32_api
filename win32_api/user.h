@@ -5,27 +5,27 @@
 #ifndef _UNICODE
 #define _UNICODE
 #endif
-#undef _WIN32_WINNT
-#define _WIN32_WINNT 0x0500
 
 #include <WTypesbase.h>
 
-class NameSid {
+class User {
 	LPTSTR name{ nullptr };
 	LPTSTR stringSid{ nullptr };
+	DWORD flags{ };
 public:
-	NameSid(LPCTSTR name, LPCTSTR stringSid);
-	BOOL getName(LPTSTR buf, DWORD & size);
-	BOOL getStringSid(LPTSTR buf, DWORD & size);
+	User(LPCTSTR name, LPCTSTR stringSid, DWORD flags);
+	LPCTSTR getName();
+	LPCTSTR getStringSid();
 	void cleanUp();
 };
 
-class UserScore : public NameSid {
+class UserScore : public User {
 	LPTSTR newName{ nullptr };
 	INT8 actionId;
+	INT16 points;
 public:
-	UserScore(LPCTSTR name, LPCTSTR stringSid, LPCTSTR newName, INT8 actionId);
-	BOOL getNewName(LPTSTR buf, DWORD & size);
+	UserScore(LPCTSTR name, LPCTSTR stringSid, DWORD flags, LPCTSTR newName, INT8 actionId, INT16 points);
+	LPCTSTR getNewName();
 	INT8 getActionId();
 	void cleanUp();
 };

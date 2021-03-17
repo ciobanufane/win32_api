@@ -139,12 +139,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="score.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="user.cpp" />
     <ClCompile Include="win32_api.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="score.h" />
     <ClInclude Include="user.h" />
+    <ClInclude Include="win32_api.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
