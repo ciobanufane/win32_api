@@ -93,12 +93,13 @@ int main() {
 	std::vector<NameSid> test;
 	TCHAR buf1[256] = L"";
 	TCHAR buf2[256] = L"";
+	DWORD length{ 256 };
 	GetUsers(test);
 
 	for (std::vector<NameSid>::iterator it = test.begin(); it != test.end(); ++it) {
 
-		it->getName(buf1, 256);
-		it->getStringSid(buf2, 256);
+		it->getName(buf1, length);
+		it->getStringSid(buf2, length);
 		wprintf(L"%s + %s\n", buf1, buf2);
 		it->cleanUp();
 
