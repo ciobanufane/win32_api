@@ -8,24 +8,28 @@
 
 #include <WTypesbase.h>
 
-class User {
+class Entity {
 	LPTSTR name{ nullptr };
 	LPTSTR stringSid{ nullptr };
-	DWORD flags{ };
+	DWORD flags;
+
 public:
-	User(LPCTSTR name, LPCTSTR stringSid, DWORD flags);
+	Entity(LPCTSTR name, LPCTSTR stringSid, DWORD flags);
 	LPCTSTR getName();
 	LPCTSTR getStringSid();
+	DWORD getFlags();
 	void cleanUp();
 };
 
-class UserScore : public User {
+class EntityScore : public Entity {
 	LPTSTR newName{ nullptr };
 	INT8 actionId;
 	INT16 points;
+
 public:
-	UserScore(LPCTSTR name, LPCTSTR stringSid, DWORD flags, LPCTSTR newName, INT8 actionId, INT16 points);
+	EntityScore(LPCTSTR name, LPCTSTR stringSid, DWORD flags, LPCTSTR newName, INT8 actionId, INT16 points);
 	LPCTSTR getNewName();
 	INT8 getActionId();
+	INT16 getPoints();
 	void cleanUp();
 };

@@ -141,12 +141,12 @@
   <ItemGroup>
     <ClCompile Include="score.cpp" />
     <ClCompile Include="test.cpp" />
-    <ClCompile Include="user.cpp" />
+    <ClCompile Include="entity.cpp" />
     <ClCompile Include="win32_api.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="score.h" />
-    <ClInclude Include="user.h" />
+    <ClInclude Include="entity.h" />
     <ClInclude Include="win32_api.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
