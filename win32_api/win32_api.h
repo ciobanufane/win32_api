@@ -10,7 +10,8 @@
 
 #include <WTypesbase.h>
 #include <vector>
-#include "user.h"
+#include "entity.h"
 
 BOOL GetAccountSidFromName(LPCTSTR accountName, PSID sid, const DWORD sidSize);
-BOOL GetUsers(std::vector<User>& users);
+BOOL GetUsers(std::vector<Entity>& users);
+BOOL GetGroups(std::vector<Entity>& groups);
