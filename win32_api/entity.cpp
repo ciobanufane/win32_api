@@ -2,7 +2,7 @@
 #include <tchar.h>
 #include "entity.h"
 
-Entity::Entity(LPCTSTR name, LPCTSTR stringSid, DWORD flags) {
+void Entity::initialize(LPCTSTR name, LPCTSTR stringSid, DWORD flags) {
 
 	if (!name) {
 		throw "Name cannot be null";
@@ -19,28 +19,43 @@ Entity::Entity(LPCTSTR name, LPCTSTR stringSid, DWORD flags) {
 	this->flags = flags;
 }
 
-LPCTSTR Entity::getName() {
+Entity::Entity(LPCTSTR name, LPCTSTR stringSid, DWORD flags) {
+	initialize(name, stringSid, flags);
+}
+
+Entity::Entity(const Entity& e){
+	initialize(e.getName(), e.getStringSid(), e.getFlags());
+}
+
+Entity& Entity::operator=(const Entity& e){
+	initialize(e.getName(), e.getStringSid(), e.getFlags());
+	return *this;
+}
+
+LPCTSTR Entity::getName() const {
 	return (LPCTSTR)name;
 }
 
-LPCTSTR Entity::getStringSid() {
+LPCTSTR Entity::getStringSid() const {
 	return (LPCTSTR)stringSid;
 }
 
-DWORD Entity::getFlags() {
+DWORD Entity::getFlags() const {
 	return flags;
 }
 
-void Entity::cleanUp() {
+void Entity::addMember(Entity member) {
+	memberList.push_back(member);
+}
+
+Entity::~Entity() {
 	HeapFree(GetProcessHeap(), 0, name);
-	if (!stringSid) {
+	if (stringSid) {
 		HeapFree(GetProcessHeap(), 0, stringSid);
 	}
 }
 
-EntityScore::EntityScore(LPCTSTR name, LPCTSTR stringSid, DWORD flags, LPCTSTR newName, INT8 actionId, INT16 points) 
-	: Entity(name, stringSid, flags){
-
+void EntityScore::initialize(LPCTSTR name, LPCTSTR stringSid, DWORD flags, LPCTSTR newName, INT8 actionId, INT16 points) {
 	if (actionId < 0 || actionId > 3) {
 		throw "Not a valid action";
 	}
@@ -55,25 +70,40 @@ EntityScore::EntityScore(LPCTSTR name, LPCTSTR stringSid, DWORD flags, LPCTSTR n
 		this->newName = (LPTSTR)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*newName) * (_tcslen(newName) + 1));
 		StringCchCopy(this->newName, _tcslen(newName) + 1, newName);
 	}
+
 	this->actionId = actionId;
 	this->points = points;
 }
 
-LPCTSTR EntityScore::getNewName() {
+EntityScore::EntityScore(LPCTSTR name, LPCTSTR stringSid, DWORD flags, LPCTSTR newName, INT8 actionId, INT16 points) 
+	: Entity(name, stringSid, flags){
+	initialize(name, stringSid, flags, newName, actionId, points);
+}
+
+EntityScore::EntityScore(const EntityScore& es) : Entity(es.getName(), es.getStringSid(), es.getFlags()) {
+	initialize(es.getName(), es.getStringSid(), es.getFlags(), es.getNewName(), es.getActionId(), es.getPoints());
+}
+
+EntityScore& EntityScore::operator=(const EntityScore& es) {
+	initialize(es.getName(), es.getStringSid(), es.getFlags(), es.getNewName(), es.getActionId(), es.getPoints());
+	return *this;
+}
+
+LPCTSTR EntityScore::getNewName() const {
 	return (LPCTSTR)newName;
 }
 
-INT8 EntityScore::getActionId() {
+INT8 EntityScore::getActionId() const {
 	return actionId;
 }
 
-INT16 EntityScore::getPoints() {
+INT16 EntityScore::getPoints() const {
 	return points;
 }
 
-void EntityScore::cleanUp() {
-	Entity::cleanUp();
-	if (!newName) {
+EntityScore::~EntityScore() {
+	if (newName) {
 		HeapFree(GetProcessHeap(), 0, newName);
 	}
 }
+
