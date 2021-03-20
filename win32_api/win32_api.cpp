@@ -45,7 +45,7 @@ BOOL GetAccountSidFromName(LPCTSTR accountName, PSID sid, const DWORD sidSize) {
 BOOL GetUsers(std::vector<Entity> & users) {
 	// variables used for querying users
 	PNET_DISPLAY_USER pBuf, pTmpBuf;
-	DWORD result, dwEntriesRead, index = 0;
+	DWORD result, entriesRead, index = 0;
 
 	// variables used for querying a user's SID
 	BYTE sidbuf[SECURITY_MAX_SID_SIZE];
@@ -62,10 +62,10 @@ BOOL GetUsers(std::vector<Entity> & users) {
 		  &dw...	-> returns number of entries
 		  pBuf		-> pointer to a buffer which is used to store the requested data
 		--------------------------------------------------------------------*/
-		result = NetQueryDisplayInformation(nullptr, 1, index, 100, MAX_PREFERRED_LENGTH, &dwEntriesRead, (PVOID*)&pBuf);
+		result = NetQueryDisplayInformation(nullptr, 1, index, 100, MAX_PREFERRED_LENGTH, &entriesRead, (PVOID*)&pBuf);
 		if (result == ERROR_SUCCESS || result == ERROR_MORE_DATA) {
 			pTmpBuf = pBuf;
-			for (; dwEntriesRead > 0; --dwEntriesRead) {
+			for (; entriesRead > 0; --entriesRead) {
 
 				// Get SID of a user and stores it in a SID struct
 				if (!GetAccountSidFromName(pTmpBuf->usri1_name, (PSID)sidbuf, sizeof(sidbuf))) {
@@ -97,20 +97,50 @@ BOOL GetUsers(std::vector<Entity> & users) {
 	return TRUE;
 }
 
+BOOL GetGroupMemberships(Entity& group) {
+
+	if (!group.getName()) {
+		return FALSE;
+	}
+
+	PLOCALGROUP_MEMBERS_INFO_1 pBuf, pTmpBuf;
+	DWORD entriesRead, totalEntries, resumeHandle = 0;
+	NET_API_STATUS result;
+
+	do {
+		result = NetLocalGroupGetMembers(nullptr, group.getName(), 1, (LPBYTE*)&pBuf, MAX_PREFERRED_LENGTH,
+			&entriesRead, &totalEntries, &resumeHandle);
+		if (result == NERR_Success || result == ERROR_MORE_DATA) {
+			pTmpBuf = pBuf;
+			for (; entriesRead > 0; --entriesRead) {
+				group.addMember(Entity(pTmpBuf->lgrmi1_name, nullptr, 0));
+				++pTmpBuf;
+			}
+			NetApiBufferFree(pBuf);
+		}
+		else {
+			printf("Error: %u\n", result);
+			return FALSE;
+		}
+	} while (result == ERROR_MORE_DATA);
+	return TRUE;
+}
+
 BOOL GetGroups(std::vector<Entity> & groups) {
 	PLOCALGROUP_INFO_1 pBuf, pTmpBuf;
-	DWORD dwEntriesRead, totalEntries, resumeHandle = 0;
+	DWORD entriesRead, totalEntries, resumeHandle = 0, counter = 0;
 	NET_API_STATUS result;
 
 	BYTE sidBuf[SECURITY_MAX_SID_SIZE];
 	LPTSTR pszStringSid;
+	
 
 	do {
 		result = NetLocalGroupEnum(nullptr, 1, (LPBYTE*)&pBuf, MAX_PREFERRED_LENGTH,
-			&dwEntriesRead, &totalEntries, &resumeHandle);
+			&entriesRead, &totalEntries, &resumeHandle);
 		if (result == NERR_Success || result == ERROR_MORE_DATA) {
 			pTmpBuf = pBuf;
-			for (; dwEntriesRead > 0; --dwEntriesRead) {
+			for (; entriesRead > 0; --entriesRead) {
 				if (!GetAccountSidFromName(pTmpBuf->lgrpi1_name, (PSID)sidBuf, sizeof(sidBuf))) {
 					return FALSE;
 				}
@@ -118,6 +148,9 @@ BOOL GetGroups(std::vector<Entity> & groups) {
 					return FALSE;
 				}
 				groups.push_back(Entity(pTmpBuf->lgrpi1_name, pszStringSid, 0));
+				if (!GetGroupMemberships(groups[counter++])) {
+					return FALSE;
+				}
 				++pTmpBuf;
 				LocalFree(pszStringSid);
 			}
@@ -138,7 +171,6 @@ int amain() {
 
 	for (std::vector<Entity>::iterator it = test.begin(); it != test.end(); ++it) {
 		wprintf(L"%s + %s\n", it->getName(), it->getStringSid());
-		it->cleanUp();
 	}
 
 	return 0;

@@ -1,4 +1,6 @@
-#pragma once
+#ifndef WIN32_API_H
+#define WIN32_API_H
+
 #ifndef UNICODE
 #define UNICODE
 #endif
@@ -15,3 +17,5 @@
 BOOL GetAccountSidFromName(LPCTSTR accountName, PSID sid, const DWORD sidSize);
 BOOL GetUsers(std::vector<Entity>& users);
 BOOL GetGroups(std::vector<Entity>& groups);
+
+#endif
