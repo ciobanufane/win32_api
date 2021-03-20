@@ -1,10 +1,17 @@
-#pragma once
+#ifndef SCORE_H
+#define SCORE_H
 
-#include <vector>
-#include "user.h"
+#ifndef UNICODE
+#define UNICODE
+#endif
+#ifndef _UNICODE
+#define _UNICODE
+#endif
 
-void checkUserScores(std::vector<EntityScore> & scores, INT16 & points);
-void checkGroupScores(std::vector<EntityScore> & scores, INT16 & points);
+#include "entity.h"
+#include "helper_functions.h"
 
-static int searchForEntityName(std::vector<Entity>& entities, LPCTSTR name);
-static bool testEntityScoresForDuplicateName(std::vector<EntityScore>& scores);
+void checkUserScores(std::vector<EntityScore>& scores, INT16& points);
+void checkGroupScores(std::vector<EntityScore>& scores, INT16& points);
+
+#endif
