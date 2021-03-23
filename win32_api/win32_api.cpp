@@ -97,9 +97,9 @@ BOOL GetUsers(std::vector<Entity> & users) {
 	return TRUE;
 }
 
-BOOL GetGroupMemberships(Entity& group) {
+BOOL GetGroupMemberships(std::vector<Entity>& members, LPCTSTR groupName){
 
-	if (!group.getName()) {
+	if (!groupName){
 		return FALSE;
 	}
 
@@ -108,12 +108,12 @@ BOOL GetGroupMemberships(Entity& group) {
 	NET_API_STATUS result;
 
 	do {
-		result = NetLocalGroupGetMembers(nullptr, group.getName(), 1, (LPBYTE*)&pBuf, MAX_PREFERRED_LENGTH,
+		result = NetLocalGroupGetMembers(nullptr, groupName, 1, (LPBYTE*)&pBuf, MAX_PREFERRED_LENGTH,
 			&entriesRead, &totalEntries, &resumeHandle);
 		if (result == NERR_Success || result == ERROR_MORE_DATA) {
 			pTmpBuf = pBuf;
 			for (; entriesRead > 0; --entriesRead) {
-				group.addMember(Entity(pTmpBuf->lgrmi1_name, nullptr, 0));
+				members.push_back(Entity(pTmpBuf->lgrmi1_name, nullptr, 0));
 				++pTmpBuf;
 			}
 			NetApiBufferFree(pBuf);
@@ -148,9 +148,6 @@ BOOL GetGroups(std::vector<Entity> & groups) {
 					return FALSE;
 				}
 				groups.push_back(Entity(pTmpBuf->lgrpi1_name, pszStringSid, 0));
-				if (!GetGroupMemberships(groups[counter++])) {
-					return FALSE;
-				}
 				++pTmpBuf;
 				LocalFree(pszStringSid);
 			}
