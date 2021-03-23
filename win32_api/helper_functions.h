@@ -11,8 +11,6 @@
 #include <algorithm>
 #include <vector>
 #include <WTypesbase.h>
-#include <memory>
-#include <functional>
 
 namespace helper {
 
@@ -53,15 +51,15 @@ namespace helper {
 		return -1;
 	}
 
-	template <typename T>
-	bool testForDuplicateNames(std::vector<T>& scores, std::function<bool(LPCTSTR, LPCTSTR)> comparator) {
+	template <typename T, typename Compare>
+	bool testForDuplicateNames(std::vector<T>& scores, Compare comparator) {
 		unsigned int index{ 0 };
 		std::vector<LPCTSTR> copy;
 
 		for (typename std::vector<T>::iterator it = scores.begin(); it != scores.end(); ++it) {
-			copy.push_back(it->getName());
-			if (it->getNewName()) {
-				copy.push_back(it->getNewName());
+			copy.push_back(it->getOptionalName());
+			if (it->getOptionalName()) {
+				copy.push_back(it->getOptionalName());
 			}
 		}
 
