@@ -8,8 +8,7 @@
 #define _UNICODE
 #endif
 
-#include <vector>
-#include <WTypesbase.h>
+#include "helper_functions.h"
 
 class Entity {
 	LPTSTR name{ nullptr };
@@ -28,23 +27,21 @@ public:
 	LPCTSTR getName() const;
 	LPCTSTR getStringSid() const;
 	DWORD getFlags() const;
-
-	void addMember(Entity member);
 };
 
 class EntityScore : public Entity {
-	LPTSTR newName{ nullptr };
+	LPTSTR optionalName{ nullptr };
 	INT8 actionId;
 	INT16 points;
 
-	void initialize(LPCTSTR name, LPCTSTR stringSid, DWORD flags, LPCTSTR newName, INT8 actionId, INT16 points);
+	void initialize(LPCTSTR optionalName, INT8 actionId, INT16 points);
 
 public:
-	EntityScore(LPCTSTR name, LPCTSTR stringSid, DWORD flags, LPCTSTR newName, INT8 actionId, INT16 points);
+	EntityScore(LPCTSTR name, LPCTSTR stringSid, DWORD flags, LPCTSTR optionalName, INT8 actionId, INT16 points);
 	EntityScore(const EntityScore& es);
 	EntityScore& operator=(const EntityScore& es);
 	~EntityScore();
-	LPCTSTR getNewName() const;
+	LPCTSTR getOptionalName() const;
 	INT8 getActionId() const;
 	INT16 getPoints() const;
 };

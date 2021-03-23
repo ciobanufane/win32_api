@@ -1,6 +1,6 @@
 #include <strsafe.h>
 #include <tchar.h>
-#include "entity.h"
+#include "entity.h" // algorithm, vector, and WTypesBase
 
 void Entity::initialize(LPCTSTR name, LPCTSTR stringSid, DWORD flags) {
 
@@ -44,10 +44,6 @@ DWORD Entity::getFlags() const {
 	return flags;
 }
 
-void Entity::addMember(Entity member) {
-	memberList.push_back(member);
-}
-
 Entity::~Entity() {
 	HeapFree(GetProcessHeap(), 0, name);
 	if (stringSid) {
@@ -55,42 +51,33 @@ Entity::~Entity() {
 	}
 }
 
-void EntityScore::initialize(LPCTSTR name, LPCTSTR stringSid, DWORD flags, LPCTSTR newName, INT8 actionId, INT16 points) {
-	if (actionId < 0 || actionId > 3) {
-		throw "Not a valid action";
-	}
-	if (actionId == 0 && !stringSid) {
-		throw "Need to enter SID of user";
-	}
-	if (actionId == 3 && !newName) {
-		throw "Need to define a new name";
-	}
+void EntityScore::initialize(LPCTSTR optionalName, INT8 actionId, INT16 points) {
 
-	if (newName) {
-		this->newName = (LPTSTR)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*newName) * (_tcslen(newName) + 1));
-		StringCchCopy(this->newName, _tcslen(newName) + 1, newName);
+	if (optionalName) {
+		this->optionalName = (LPTSTR)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*optionalName) * (_tcslen(optionalName) + 1));
+		StringCchCopy(this->optionalName, _tcslen(optionalName) + 1, optionalName);
 	}
 
 	this->actionId = actionId;
 	this->points = points;
 }
 
-EntityScore::EntityScore(LPCTSTR name, LPCTSTR stringSid, DWORD flags, LPCTSTR newName, INT8 actionId, INT16 points) 
+EntityScore::EntityScore(LPCTSTR name, LPCTSTR stringSid, DWORD flags, LPCTSTR optionalName, INT8 actionId, INT16 points)
 	: Entity(name, stringSid, flags){
-	initialize(name, stringSid, flags, newName, actionId, points);
+	initialize(optionalName, actionId, points);
 }
 
 EntityScore::EntityScore(const EntityScore& es) : Entity(es.getName(), es.getStringSid(), es.getFlags()) {
-	initialize(es.getName(), es.getStringSid(), es.getFlags(), es.getNewName(), es.getActionId(), es.getPoints());
+	initialize(es.getOptionalName(), es.getActionId(), es.getPoints());
 }
 
 EntityScore& EntityScore::operator=(const EntityScore& es) {
-	initialize(es.getName(), es.getStringSid(), es.getFlags(), es.getNewName(), es.getActionId(), es.getPoints());
+	initialize(es.getOptionalName(), es.getActionId(), es.getPoints());
 	return *this;
 }
 
-LPCTSTR EntityScore::getNewName() const {
-	return (LPCTSTR)newName;
+LPCTSTR EntityScore::getOptionalName() const {
+	return (LPCTSTR)optionalName;
 }
 
 INT8 EntityScore::getActionId() const {
@@ -102,8 +89,8 @@ INT16 EntityScore::getPoints() const {
 }
 
 EntityScore::~EntityScore() {
-	if (newName) {
-		HeapFree(GetProcessHeap(), 0, newName);
+	if (optionalName) {
+		HeapFree(GetProcessHeap(), 0, optionalName);
 	}
 }
 
