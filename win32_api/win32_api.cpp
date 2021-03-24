@@ -161,14 +161,3 @@ BOOL GetGroups(std::vector<Entity> & groups) {
 	} while (result == ERROR_MORE_DATA);
 	return TRUE;
 }
-
-int amain() {
-	std::vector<Entity> test;
-	GetGroups(test);
-
-	for (std::vector<Entity>::iterator it = test.begin(); it != test.end(); ++it) {
-		wprintf(L"%s + %s\n", it->getName(), it->getStringSid());
-	}
-
-	return 0;
-}

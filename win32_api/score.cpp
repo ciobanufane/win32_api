@@ -106,7 +106,6 @@ void checkGroupScores(std::vector<EntityScore> & scores, INT16 & points) {
 }
 
 void checkGroupMembershipScores(std::vector<EntityScore>& scores, INT16& points) {
-	int groupIndex;
 	int memberIndex;
 	std::vector<Entity> groups;
 	std::vector<Entity> members;
@@ -153,21 +152,4 @@ void checkGroupMembershipScores(std::vector<EntityScore>& scores, INT16& points)
 				break;
 		}
 	}
-}
-
-int main() {
-	INT16 points{ 0 };
-	std::vector<EntityScore> test;
-	std::vector<Entity> test1;
-
-	Entity t1 = Entity(L"test", nullptr, 0);
-	test1.push_back(t1);
-
-	EntityScore t2 = EntityScore(L"test", nullptr, 0, nullptr, 2, 10);
-	test.push_back(t2);
-
-	checkGroupScores(test, points);
-	wprintf(L"%d\n", points);
-
-	return 0;
 }
